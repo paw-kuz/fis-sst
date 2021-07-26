@@ -22,7 +22,14 @@ class ForexEngine {
 	 * @throws QuoteOutdatedException when passed quoteTime is older than the one already stored in the rates map
 	 */
 	BigDecimal update(Pair pair, BigDecimal exchangeRate, ZonedDateTime quoteTime) throws QuoteOutdatedException {
-		throw new UnsupportedOperationException("Please, implement me");
+		if (!rates.containsKey(pair)) {
+			rates.put(pair, new Bid(exchangeRate, quoteTime));
+			return BigDecimal.ZERO;
+		} else if (quoteTime.isBefore(rates.get(pair).getQuoteTime())) throw new QuoteOutdatedException();
+
+		BigDecimal differenceBetweenExchangeRate = exchangeRate.subtract(rates.get(pair).getExchangeRate());
+		rates.put(pair, new Bid(exchangeRate, quoteTime));
+		return differenceBetweenExchangeRate;
 	}
 
 	/**

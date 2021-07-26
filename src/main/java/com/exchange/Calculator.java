@@ -24,7 +24,17 @@ class Calculator {
 	 * @return exchanged amount
 	 */
 	Money exchange(Money amount, Currency convertTo) throws RateUnavailableException {
-		throw new UnsupportedOperationException("Please, implement me");
+		try {
+			BigDecimal exchangeRate = forexEngine.getExchangeRate(new Pair(amount.getCurrency(), convertTo));
+			BigDecimal exchangedAmount = exchangeRate.multiply(amount.getAmount());
+			return new Money(exchangedAmount, convertTo);
+		} catch (RateUnavailableException e) {}
+		try {
+			BigDecimal exchangeRatePairInverse = forexEngine.getExchangeRate(new Pair(convertTo, amount.getCurrency()));
+			BigDecimal exchangedAmount = amount.getAmount().divide(exchangeRatePairInverse);
+			return new Money(exchangedAmount, convertTo);
+		} catch (RateUnavailableException e) {}
+		throw new RateUnavailableException();
 	}
 
 }
